@@ -1,5 +1,5 @@
 # PCIBan
-A PoC for requesting HWIDs directly from hardware, skipping any potential hooks or OS support.
+A PoC for requesting HWIDs directly from hardware, skipping any potential hooks or OS support. This is probably very unsafe, not supporting edge cases, etc.
 
 ## Features
 * Bruteforce PCI enumeration
