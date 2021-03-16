@@ -1,12 +1,10 @@
 #include "Driver.h"
 #include "Pci.h"
-#include "MemoryAccess.h"
 
 #include <intrin.h>
 
 #define AHCI_SEARCH_COUNT 64
 
-static MEMORY_ACCESS_CONTEXT Memory;
 
 //
 // A found PCI device.
@@ -315,7 +313,6 @@ CollectAhciSerials(
 
 NTSTATUS DriverEntry(PDRIVER_OBJECT DriverObject, PUNICODE_STRING RegistryPath) 
 {
-	InitMemoryAccessContext(&Memory);
 	CollectAhciSerials();
 	return STATUS_SUCCESS;
 }
