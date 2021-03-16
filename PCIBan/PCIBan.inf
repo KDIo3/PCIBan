@@ -1,0 +1,20 @@
+[Version]
+Signature="$WINDOWS NT$"
+Class=Sample
+ClassGuid={98A1C341-4739-11d3-B88D-00C03FAD5171}
+Provider=%ManufacturerName%
+CatalogFile=Spoofer.cat
+DriverVer=01/01/2000
+
+[Kernel_Device.NT.Wdf]
+KmdfService =  Spoofer, Kernel_wdfsect
+
+[Kernel_wdfsect]
+KmdfLibraryVersion = $KMDFVERSION$
+
+[Strings]
+ManufacturerName="<Your manufacturer name>"
+ClassName="Samples"
+DiskName = "Spoofer Installation Disk"
+Spoofer.DeviceDesc = "Spoofer Device"
+Spoofer.SVCDESC = "Spoofer Service"
