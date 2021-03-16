@@ -125,8 +125,6 @@ FindPciDevices(
 
 	for (UINT8 bus = 0; bus < PCI_MAX_BUS; bus++)
 	{
-		DbgPrintEx(DPFLTR_IHVDRIVER_ID, DPFLTR_ERROR_LEVEL, "Reading PCI bus %d\n", (INT32)bus);
-
 		for (UINT8 device = 0; device < PCI_MAX_DEVICE; device++)
 		{
 			FindPciDevicesAt(Out, OutLen, max, bus, device);
@@ -169,7 +167,6 @@ RequestAhciSerialAbar(
 
 	p = &Abar->Ports[Port];
 
-	DbgPrintEx(DPFLTR_IHVDRIVER_ID, DPFLTR_ERROR_LEVEL, "Finding slot\n");
 	UINT32 slotMask = (p->Sact | p->Ci);
 	INT32 slot = -1;
 	for (INT32 i = 0; i < 8 && slot == -1; i++)
@@ -185,7 +182,6 @@ RequestAhciSerialAbar(
 		goto _cleanup;
 	}
 
-	DbgPrintEx(DPFLTR_IHVDRIVER_ID, DPFLTR_ERROR_LEVEL, "Mapping CMD header\n");
 	tmpAddr.QuadPart = (UINT64)p->Clb + (slot * sizeof(PCI_ABAR_CMD_HEADER));
 	cmdh = (PCI_ABAR_CMD_HEADER*)MmMapIoSpace(tmpAddr, sizeof(PCI_ABAR_CMD_HEADER), MmNonCached);
 	if (!cmdh)
@@ -193,7 +189,6 @@ RequestAhciSerialAbar(
 		goto _cleanup;
 	}
 
-	DbgPrintEx(DPFLTR_IHVDRIVER_ID, DPFLTR_ERROR_LEVEL, "Mapping CMD table\n");
 	tmpAddr.QuadPart = cmdh->Ctba;
 	cmdt = (PCI_ABAR_CMD_TBL*)MmMapIoSpace(tmpAddr, sizeof(PCI_ABAR_CMD_TBL), MmNonCached);
 	if (!cmdt)
@@ -202,7 +197,6 @@ RequestAhciSerialAbar(
 	}
 
 	cmdfis = (PCI_ABAR_FIS_REG_H2D*)cmdt->Cfis;
-	DbgPrintEx(DPFLTR_IHVDRIVER_ID, DPFLTR_ERROR_LEVEL, "Setting\n");
 
 	p->Ie = 0xffffffff;
 	p->Is = 0x0;
@@ -235,8 +229,6 @@ RequestAhciSerialAbar(
 		goto _cleanup;
 	}
 
-	DbgPrintEx(DPFLTR_IHVDRIVER_ID, DPFLTR_ERROR_LEVEL, "Retrieved!\n");
-
 _cleanup:
 	if (cmdh)
 	{
@@ -264,7 +256,6 @@ RequestAhciSerialDevice(
 		PHYSICAL_ADDRESS abarAddr;
 		abarAddr.QuadPart = (UINT64)abarAddrRaw;
 
-		DbgPrintEx(DPFLTR_IHVDRIVER_ID, DPFLTR_ERROR_LEVEL, "Mapping ABAR\n");
 		PCI_ABAR* abar = (PCI_ABAR*)MmMapIoSpace(abarAddr, sizeof(PCI_ABAR), MmNonCached);
 		if (abar)
 		{
@@ -274,7 +265,7 @@ RequestAhciSerialDevice(
 
 			RequestAhciSerialAbar(abar, 0, MmGetPhysicalAddress(buf));
 
-			DbgPrintEx(DPFLTR_IHVDRIVER_ID, DPFLTR_ERROR_LEVEL, "Serial= %p\n", buf);
+			DbgPrintEx(DPFLTR_IHVDRIVER_ID, DPFLTR_ERROR_LEVEL, "Serial= %s\n", buf->SerialNumber);
 			MmUnmapIoSpace(abar, sizeof(PCI_ABAR));
 		}
 	}
@@ -288,7 +279,6 @@ VOID
 CollectAhciSerials(
 )
 {
-	DbgPrintEx(DPFLTR_IHVDRIVER_ID, DPFLTR_ERROR_LEVEL, "Finding devices\n");
 	PCI_DEVICE devices[AHCI_SEARCH_COUNT];
 	SIZE_T len = sizeof(PCI_HEADER_GENERIC) * AHCI_SEARCH_COUNT;
 	FindPciDevices(devices, &len);
@@ -300,8 +290,6 @@ CollectAhciSerials(
 			device.Header.SubClass == PCI_SUBCLASS_SERIAL_ATA &&
 			device.Header.ProgIf == PCI_PROGIF_AHCI)
 		{
-			DbgPrintEx(DPFLTR_IHVDRIVER_ID, DPFLTR_ERROR_LEVEL, "Reading AHCI PCI config\n");
-
 			PCI_HEADER_0 header;
 			if (ReadPciConfig(&header, sizeof(header), device.Bus, device.Device, device.Function))
 			{
