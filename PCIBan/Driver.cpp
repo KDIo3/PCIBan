@@ -143,32 +143,17 @@ RequestAhciSerialAbar(
 	_In_ PHYSICAL_ADDRESS IdentifyOutput
 )
 {
-	#define AHCI_PORT_START() p->Cmd &= ~HBA_PxCMD_ST; \
-		while (p->Cmd & HBA_PxCMD_CR) \
-		{ \
-			_mm_pause(); \
-		} \
-		p->Cmd |= HBA_PxCMD_FRE; \
-		p->Cmd |= HBA_PxCMD_ST;
-
-	#define AHCI_PORT_STOP() p->Cmd &= ~HBA_PxCMD_ST; \
-		while (p->Cmd & HBA_PxCMD_CR) \
-		{ \
-			_mm_pause(); \
-		} \
-		p->Cmd &= ~HBA_PxCMD_FRE;
-
-
 	PCI_ABAR_PORT* p = NULL;
 	PHYSICAL_ADDRESS tmpAddr;
 	PCI_ABAR_CMD_HEADER* cmdh = NULL;
 	PCI_ABAR_CMD_TBL* cmdt = NULL;
 	PCI_ABAR_FIS_REG_H2D* cmdfis = NULL;
+	UINT32 slotMask;
+	INT32 slot;
 
 	p = &Abar->Ports[Port];
-
-	UINT32 slotMask = (p->Sact | p->Ci);
-	INT32 slot = -1;
+	slotMask = (p->Sact | p->Ci);
+	slot = -1;
 	for (INT32 i = 0; i < 8 && slot == -1; i++)
 	{
 		if (!(slotMask & (1 << i)))
@@ -264,8 +249,9 @@ RequestAhciSerialDevice(
 			memset(buf, 0, PAGE_SIZE);
 
 			RequestAhciSerialAbar(abar, 0, MmGetPhysicalAddress(buf));
-
 			DbgPrintEx(DPFLTR_IHVDRIVER_ID, DPFLTR_ERROR_LEVEL, "Serial= %s\n", buf->SerialNumber);
+
+			ExFreePool(buf);
 			MmUnmapIoSpace(abar, sizeof(PCI_ABAR));
 		}
 	}
